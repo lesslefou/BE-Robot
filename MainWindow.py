@@ -24,7 +24,7 @@ speed = 2000
 COM = "COM0"
 initOscilloscope = False
 initRobot = False
-
+idOscilloscope = 'USB0::0x05FF::0x1023::3561N16324::INSTR'
 
 
 """
@@ -84,7 +84,7 @@ class MainWindow(QMainWindow):
         
         #------------------------Speed----------------------        
         speed_widget = QWidget(right_widget)
-        speed_widget.setGeometry(0, 80, 400, 100)
+        speed_widget.setGeometry(0, 80, 400, 90)
                 
         #Slider speed
         title_speed = QLabel("Select speed:")
@@ -111,32 +111,51 @@ class MainWindow(QMainWindow):
         
         #------------------------Buttons----------------------
         btn_widget = QWidget(right_widget)
-        btn_widget.setGeometry(0, 200, 400, 250)
-        button1 = QPushButton('Initialisation Osccilloscope COM ')
-        button2 = QPushButton('Setup Osccilloscope Parameters')
-        button3 = QPushButton('Initialisation')
-        button4 = QPushButton('Home Position ')
-        button5 = QPushButton('NFC Figure')
-        button6 = QPushButton('EMVCO Figure')
-        button7 = QPushButton('Close Robot communication')
+        btn_widget.setGeometry(0, 250, 400, 250)
+        self.button1 = QPushButton(' Oscilloscope COM Initialization')
+        self.button2 = QPushButton('Setup Oscilloscope Parameters')
+        self.button3 = QPushButton('Robot Initialization')
+        self.button4 = QPushButton('Home Position ')
+        self.button5 = QPushButton('NFC Figure')
+        self.button6 = QPushButton('EMVCO Figure')
+        self.button7 = QPushButton('Close Robot communication')
+        self.button1.setEnabled(False)
+        self.button2.setEnabled(False)
+        self.button3.setEnabled(False)
+        self.button4.setEnabled(False)
+        self.button5.setEnabled(False)
+        self.button6.setEnabled(False)
+        self.button7.setEnabled(False)
+        self.button8 = QPushButton('Robot 5 axes')
+        self.button9 = QPushButton('Robot 6 axes')
+        
+        btn_widgetAxes = QWidget(right_widget)
+        btn_widgetAxes.setGeometry(0, 200, 400, 50)
+        grid_btnAxes = QGridLayout()
+        grid_btnAxes.addWidget(self.button8, 0, 0)
+        grid_btnAxes.addWidget(self.button9, 0, 1)
+        btn_widgetAxes.setLayout(grid_btnAxes)
+        
         grid_btn = QGridLayout()
-        grid_btn.addWidget(button1, 0, 0)
-        grid_btn.addWidget(button2, 1, 0)
-        grid_btn.addWidget(button3, 2, 0)
-        grid_btn.addWidget(button4, 3, 0)
-        grid_btn.addWidget(button5, 4, 0)
-        grid_btn.addWidget(button6, 5, 0)
-        grid_btn.addWidget(button7, 6, 0)
+        grid_btn.addWidget(self.button1, 0, 0)
+        grid_btn.addWidget(self.button2, 1, 0)
+        grid_btn.addWidget(self.button3, 2, 0)
+        grid_btn.addWidget(self.button4, 3, 0)
+        grid_btn.addWidget(self.button5, 4, 0)
+        grid_btn.addWidget(self.button6, 5, 0)
+        grid_btn.addWidget(self.button7, 6, 0)
         btn_widget.setLayout(grid_btn)
         
         
-        button1.clicked.connect(self.initOscilloscope)
-        button2.clicked.connect(self.setupOscilloscope)
-        button3.clicked.connect(self.initialisation)
-        button4.clicked.connect(S_GoToHome)
-        button5.clicked.connect(self.nfc)
-        button6.clicked.connect(self.emvco)
-        button7.clicked.connect(self.disconnect)
+        self.button1.clicked.connect(self.initOscilloscope)
+        self.button2.clicked.connect(self.setupOscilloscope)
+        self.button3.clicked.connect(self.initialization)
+        self.button4.clicked.connect(S_GoToHome)
+        self.button5.clicked.connect(self.nfc)
+        self.button6.clicked.connect(self.emvco)
+        self.button7.clicked.connect(self.disconnect)
+        self.button8.clicked.connect(self.robotAxis5)
+        self.button9.clicked.connect(self.robotAxis6)        
         
         
         
@@ -185,13 +204,47 @@ class MainWindow(QMainWindow):
         validationText.setEnabled(False)
         grid.addWidget(validationText)
         validTextBox_widget.setLayout(grid)
+        
+        
+    """
+     * @brief activate the buttons
+    """ 
+    def robotAxis5(self):
+        self.RobID = 5
+        self.button9.setEnabled(False)
+        self.button1.setEnabled(True)
+        self.button1.setEnabled(True)
+        self.button2.setEnabled(True)
+        self.button3.setEnabled(True)
+        self.button4.setEnabled(True)
+        self.button5.setEnabled(True)
+        self.button6.setEnabled(True)
+        self.button7.setEnabled(True)
+        speed5axis()
+    
+        
+    """
+     * @brief activate the buttons
+    """ 
+    def robotAxis6(self):
+        self.RobID = 6
+        self.button8.setEnabled(False)
+        self.button1.setEnabled(True)
+        self.button1.setEnabled(True)
+        self.button2.setEnabled(True)
+        self.button3.setEnabled(True)
+        self.button4.setEnabled(True)
+        self.button5.setEnabled(True)
+        self.button6.setEnabled(True)
+        self.button7.setEnabled(True)
+        speed6axis()
  
     
     """
      * @brief Initialise the connection to the oscilloscope
     """ 
     def initOscilloscope(self):
-        rm = oscilloscopeConnection('USB0::0x05FF::0x1023::3561N16324::INSTR')
+        rm = oscilloscopeConnection(idOscilloscope)
         #display the action on the specific Text Box
         validationText.setText("Oscilloscope Connection: " + str(rm.list_resources()))
         
@@ -211,9 +264,9 @@ class MainWindow(QMainWindow):
         
    
     """
-     * @brief Initialise the Robot position 
+     * @brief Initialize the Robot position 
     """ 
-    def initialisation(self):
+    def initialization(self):
         err = S_Initialization(COM)
         global initRobot
         if err == 0 :

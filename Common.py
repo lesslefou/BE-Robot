@@ -39,7 +39,7 @@ from oscilloscopeAcquisition import *
 # global RobID
 
 # Robx choice
-RobID = 5
+RobID = 0
 
 # debug traces
 # 0 = no
@@ -64,7 +64,9 @@ ERR_VACUUM = 5
 ERR_SOFT = 6
 
 # speed definition
-if (RobID == 5):
+def speed5axis():
+    global RobID
+    RobID = 5
     MAX_SPEED = 65535
     DEFAULT_SPEED = 10000
     SLOW_SPEED = 200
@@ -72,7 +74,14 @@ if (RobID == 5):
     MAX_ACCEL = 5000
     DEFAULT_ACCEL = 1000
     MIN_ACCEl = 100
-else:
+    XuserIn = 213
+    XuserOut = -215
+    Zuser = 0
+    print("5 axes!")
+
+def speed6axis():
+    global RobID
+    RobID = 6
     MAX_SPEED = 10000
     DEFAULT_SPEED = 1000
     SLOW_SPEED = 200
@@ -80,6 +89,10 @@ else:
     MAX_ACCEL = 10000
     DEFAULT_ACCEL = 2000
     MIN_ACCEl = 100
+    XuserIn = 220
+    XuserOut = 220
+    Zuser = 0
+    print("6 axes!")
 
 # Rob6x IP address
 socket = "192.168.30.33"
@@ -192,7 +205,7 @@ def S_SetSpeed(val):
 
 
 
-def S_Initialization(COM_chose):
+def S_Initialization(COM_chose, RobID):
     # Robot choice
     err = Robx.RobotSelect(RobID);
     if err == 0:
