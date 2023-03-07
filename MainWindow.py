@@ -15,10 +15,11 @@ from Common import *
 import time
 
 
+
 # ------------------- Definition of central point for acquisition ---
 x_ptr = 0
 y_ptr = 419
-z_ptr = -105
+z_ptr = -165
 
 speed = 2000
 COM = "COM0"
@@ -211,15 +212,15 @@ class MainWindow(QMainWindow):
     """ 
     def robotAxis5(self):
         self.RobID = 5
-        self.button9.setEnabled(False)
         self.button1.setEnabled(True)
         self.button1.setEnabled(True)
-        self.button2.setEnabled(True)
+        self.button2.setEnabled(False)
         self.button3.setEnabled(True)
         self.button4.setEnabled(True)
-        self.button5.setEnabled(True)
-        self.button6.setEnabled(True)
+        self.button5.setEnabled(True) 
+        self.button6.setEnabled(False)
         self.button7.setEnabled(True)
+        self.button9.setEnabled(True)
         speed5axis()
     
         
@@ -228,17 +229,40 @@ class MainWindow(QMainWindow):
     """ 
     def robotAxis6(self):
         self.RobID = 6
+        self.button1.setEnabled(True)
+        self.button1.setEnabled(True)
+        self.button2.setEnabled(False)
+        self.button3.hide()
+        self.button4.hide()
+        self.button5.setEnabled(False)
+        self.button6.setEnabled(False)
+        self.button7.setEnabled(False)
         self.button8.setEnabled(False)
-        self.button1.setEnabled(True)
-        self.button1.setEnabled(True)
-        self.button2.setEnabled(True)
-        self.button3.setEnabled(True)
-        self.button4.setEnabled(True)
-        self.button5.setEnabled(True)
-        self.button6.setEnabled(True)
-        self.button7.setEnabled(True)
         speed6axis()
- 
+        
+    """
+     * @brief activate the acquisition buttons
+    """ 
+    def acquisitionButtonsActivation(self):
+         if (initOscilloscope == True):
+             self.button5.setEnabled(True)
+             self.button6.setEnabled(True)
+
+    """
+     * @brief activate the setup oscilloscope button
+    """ 
+    def setupOscilloscopeButtonActivation(self):
+         if (initOscilloscope == True):
+             self.button2.setEnabled(True)
+
+    """
+     * @brief activate the robot buttons
+    """ 
+    def robotButtonsActivation(self):
+        if (initRobot == True):
+             self.button4.setEnabled(True)
+             self.button7.setEnabled(True)
+             
     
     """
      * @brief Initialise the connection to the oscilloscope
@@ -251,6 +275,8 @@ class MainWindow(QMainWindow):
         #variable set to true in order to enable the setupOscilloscope fonction
         global initOscilloscope
         initOscilloscope = True
+        self.acquisitionButtonsActivation()
+        self.setupOscilloscopeButtonActivation()
     
     """
      * @brief Launch the setup fonction of the oscilloscope
@@ -267,11 +293,13 @@ class MainWindow(QMainWindow):
      * @brief Initialize the Robot position 
     """ 
     def initialization(self):
-        err = S_Initialization(COM)
+        err = S_Initialization(COM,self.RobID)
         global initRobot
         if err == 0 :
             validationText.setText("Robot Connection Done")
             initRobot = True
+            self.acquisitionButtonsActivation()
+            self.robotButtonsActivation()
         else :
             validationText.setText("Wrong COM port or cable connected")
             

@@ -34,6 +34,7 @@ global Robx
 import MainWindow
 import time
 from oscilloscopeAcquisition import *
+from bddScript import *
 
 
 # global RobID
@@ -207,6 +208,7 @@ def S_SetSpeed(val):
 
 def S_Initialization(COM_chose, RobID):
     # Robot choice
+    print(RobID)
     err = Robx.RobotSelect(RobID);
     if err == 0:
         # Openning COM Port
@@ -353,16 +355,29 @@ def nfc(x_ptr, y_ptr, z_ptr, speed):
     S_SetSpeed(speed)
     
     
-    getOscillocopeConfiguration()
+    #bdd opening
+    open_ssh_tunnel()
+    mysql_connect()
+    
+    sendMeshTypeToBdd("nfc")
+    
+    #getOscillocopeConfiguration()
     print('NFC Start')
     
+    S_GoTo(x_ptr, y_ptr, z_ptr, 0, 90, Temps_limit) #go to the reference point  point(0,0,0)
+    S_GoTo(x_ptr-rb_nfc, y_ptr, z_ptr, 0, 90, Temps_limit) # first move from the reference point   point(-1,0,0)
 
-    S_GoTo(x_ptr, y_ptr, z_ptr, -68, 88, Temps_limit) #go to the reference point  point(0,0,0)
+    #Bdd closing
+    mysql_disconnect()
+    close_ssh_tunnel()
+    
+    
+    ''' S_GoTo(x_ptr, y_ptr, z_ptr, 0, 90, Temps_limit) #go to the reference point  point(0,0,0)
     time.sleep(timeToSleep)
     getAcquisition("(0,0,0)")
     goHorsChamp(Temps_limit)
     
-    S_GoTo(x_ptr-rb_nfc, y_ptr, z_ptr, -68, 88, Temps_limit) # first move from the reference point   point(-1,0,0)
+    S_GoTo(x_ptr-rb_nfc, y_ptr, z_ptr, 0, 90, Temps_limit) # first move from the reference point   point(-1,0,0)
     time.sleep(timeToSleep)
     getAcquisition("(-1,0,0)")
     goHorsChamp(Temps_limit)
@@ -407,6 +422,12 @@ def nfc(x_ptr, y_ptr, z_ptr, speed):
     getAcquisition("(0,0,1)")
     goHorsChamp(Temps_limit)
     
+    
+    #Bdd closing
+    mysql_disconnect()
+    close_ssh_tunnel()'''
+    
+    
 """
  * @brief EMVCO Acquisition
 """
@@ -419,9 +440,14 @@ def emvco(x_ptr, y_ptr, z_ptr, speed):
     
     Temps_limit = 6000
     
+    #bdd opening
+    open_ssh_tunnel()
+    mysql_connect()
+    
 
     S_SetSpeed(speed)
     
+    sendMeshTypeToBdd("emvco")    
     
     getOscillocopeConfiguration()
     print('emvco start')
@@ -553,7 +579,11 @@ def emvco(x_ptr, y_ptr, z_ptr, speed):
     S_GoTo(x_ptr, y_ptr-rg_emvco, z_ptr+4*h_emvco, 0, 90, Temps_limit) #point(0,-1,4)
     time.sleep(timeToSleep)
     getAcquisition("(0,-1,4)")
-    goHorsChamp(Temps_limit)  
+    goHorsChamp(Temps_limit) 
+    
+    #Bdd closing
+    mysql_disconnect()
+    close_ssh_tunnel()
     
 
 # ------------------------------ Vacuum Functions -----------------------------

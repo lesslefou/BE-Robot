@@ -11,6 +11,8 @@ import pyvisa
 import time
 from lecroy import *
 from bddSetupOscilloscope import *
+from bddScript import *
+import datetime
 
 
 """
@@ -54,6 +56,9 @@ def setOscilloscopeParameters() :
     lecroy.setHorizontal_delay(delay=-140*lecroy.unit_us)
   
     
+  
+
+idAcquisitionValue = (0,)
 """
  * @brief Get the configuration of the oscilloscope
 """
@@ -64,12 +69,33 @@ def getOscillocopeConfiguration():
     C2VerticalScale = lecroy.getChannelVerticalScale("C2")
     C3VerticalScale = lecroy.getChannelVerticalScale("C3")
     
+    global idAcquisitionValue
+    #get the last idAcquisitionValue and idConfiguration
+    idConfiguration = get_query('''SELECT idConfiguration FROM Configuration ORDER BY idConfiguration DESC LIMIT 1''')
+    if (len(idConfiguration) == 0):
+        idConfiguration = 0
+    else:
+        idConfiguration = idConfiguration[0][0]
+        idConfiguration += 1
+        
+    
+    idAcquisitionValue = get_query('''SELECT idAcquisitionValue FROM AcquisitionValue ORDER BY idAcquisitionValue DESC LIMIT 1''')
+    if (len(idAcquisitionValue) == 0):
+        idAcquisitionValue = 0
+    else:
+        idAcquisitionValue = idAcquisitionValue[0][0]
+    
     print(sampleRate, horizontal_scale, C1VerticalScale, C2VerticalScale, C3VerticalScale)
+    
+    #envoie bdd 
+    push_query(f"""INSERT INTO Configuration (idConfiguration, SH, SV1, SV2, SV3, Sample) values ({idConfiguration}, {horizontal_scale}, {C1VerticalScale}, {C2VerticalScale}, {C3VerticalScale}, {sampleRate})""")
+    
+    
     
 """
  * @brief Get six specifics variables mesured by the oscilloscope
 """
-def getAcquisition(nomPoint):
+def getAcquisition(nomPoint):    
     #Get value of measurement channels
     RMS_C1 = "{:.4f}".format(lecroy.getValueOnChannel('P1', 'value')) if isinstance(lecroy.getValueOnChannel('P1', 'value'), (float, int)) else "{}".format(lecroy.getValueOnChannel('P1', 'value'))
     RMS_C2 = "{:.4f}".format(lecroy.getValueOnChannel('P2', 'value')) if isinstance(lecroy.getValueOnChannel('P2', 'value'), (float, int)) else "{}".format(lecroy.getValueOnChannel('P2', 'value'))
@@ -78,5 +104,37 @@ def getAcquisition(nomPoint):
     PKPK_C2 = "{:.4f}".format(lecroy.getValueOnChannel('P5', 'value')) if isinstance(lecroy.getValueOnChannel('P5', 'value'), (float, int)) else "{}".format(lecroy.getValueOnChannel('P5', 'value'))
     PKPK_C3 = "{:.4f}".format(lecroy.getValueOnChannel('P6', 'value')) if isinstance(lecroy.getValueOnChannel('P6', 'value'), (float, int)) else "{}".format(lecroy.getValueOnChannel('P6', 'value'))
 
+    global idAcquisitionValue
+    idAcquisitionValue += 1 
+    
     print(nomPoint,RMS_C1, RMS_C2, RMS_C3, PKPK_C1, PKPK_C2, PKPK_C3)
+    
+    #Bdd Sending
+    push_query(f"""INSERT INTO AcquisitionValue (idAcquisitionValue, RMSC1, RMSC2, RMSC3, PKPKC1, PKPKC2, PKPKC3, Name) values ({idAcquisitionValue}, {RMS_C1}, {RMS_C2}, {RMS_C3}, {PKPK_C1}, {PKPK_C2}, {PKPK_C3}, "{nomPoint}")""")
+
+
+def sendMeshTypeToBdd(mesh):
+    #get the last idAcquisition
+    idAcquisition = get_query('''SELECT idAcquisition FROM Acquisition ORDER BY idAcquisition DESC LIMIT 1''')
+    
+    year =  datetime.datetime.now().year
+    month =  datetime.datetime.now().month
+    day =  datetime.datetime.now().day
+    hour =  datetime.datetime.now().hour
+    minute =  datetime.datetime.now().minute
+    second =  datetime.datetime.now().second
+        
+    
+    date = str(year) + '-' + str(month) + '-'  + str(day) + ' | ' + str(hour) + ':' + str(minute) + ':'  + str(second)
+    print(date)
+    
+    
+    if (len(idAcquisition) == 0):
+        idAcquisition = 0
+    else:
+        idAcquisition = idAcquisition[0][0]
+        idAcquisition += 1
+        
+    push_query(f"""INSERT INTO Acquisition (idAcquisition, Mesh, Time) values ({idAcquisition}, "{mesh}", "{date}")""")
+
 
